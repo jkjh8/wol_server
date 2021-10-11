@@ -1,6 +1,7 @@
 import { app, BrowserWindow, nativeTheme } from 'electron'
 import { ipcMain } from 'electron'
 import path from 'path'
+import net from 'net'
 import dgram from 'dgram'
 import moment from 'moment'
 import wol from 'node-wol'
@@ -218,3 +219,13 @@ ipcMain.on('poweroffall', async (event) => {
     console.error(err)
   }
 })
+
+const tcpSocket = net
+  .createServer(function (socket) {
+    console.log('client connect: ', socket.remoteAddress)
+    socket.on('data', function (data) {
+      console.log(data)
+      socket.write(data)
+    })
+  })
+  .listen(9995, '0.0.0.0')
