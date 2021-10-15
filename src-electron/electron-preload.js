@@ -46,4 +46,7 @@ contextBridge.exposeInMainWorld('Fn', {
   alloff: () => {
     ipcRenderer.send('poweroffall')
   },
+  deleteAll: () => {
+    ipcRenderer.send('deleteAll')
+  }
 })

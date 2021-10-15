@@ -52,6 +52,7 @@ function createWindow() {
   mainWindow.on('closed', () => {
     mainWindow = null
   })
+  mainWindow.setMenu(null)
 }
 
 app.on('ready', createWindow)
@@ -191,6 +192,12 @@ ipcMain.on('delete', async (event, args) => {
   await db.list.remove({ _id: args._id })
   const r = await getList()
   mainWindow.webContents.send('returnList', r)
+})
+
+ipcMain.on('deleteAll', async (event) => {
+  console.log('deleteAll')
+  await db.list.remove({}, { multi: true })
+  mainWindow.webContents.send('returnList', [])
 })
 
 ipcMain.on('poweronall', async (event) => {

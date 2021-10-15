@@ -25,19 +25,26 @@
     <div class="q-mt-xl" style="height: 100%">
       <q-card class="shadow-15" style="border-radius: 1rem; height: 100%">
         <q-card-section>
-          <div class="row nowrap items-center">
-            <q-icon
-              class="q-mx-sm"
-              name="svguse:icons.svg#ethernet"
-              size="md"
-            ></q-icon>
-            <div>
-              <div class="listname">Client List</div>
-              <div class="caption">
-                현제 등록된 PC {{ listCount }}대 기동중 {{ idleCount }}대 동작중
-                {{ statusCount }}대 입니다.
+          <div class="row justify-between items-center">
+            <div class="row nowrap items-center">
+              <q-icon
+                class="q-mx-sm"
+                name="svguse:icons.svg#ethernet"
+                size="md"
+              ></q-icon>
+              <div>
+                <div class="listname">Client List</div>
+                <div class="caption">
+                  현제 등록된 PC {{ listCount }}대 기동중 {{ idleCount }}대 동작중
+                  {{ statusCount }}대 입니다.
+                </div>
               </div>
             </div>
+            <div>
+              <q-btn round unelevated @click="fnDeleteAll">
+                <q-icon name="svguse:icons.svg#refresh" color="green-10"></q-icon>
+              </q-btn>
+          </div>
           </div>
         </q-card-section>
         <q-card-section>
@@ -224,6 +231,18 @@ export default defineComponent({
       })
     }
 
+    function fnDeleteAll() {
+      $q.dialog({
+        title: 'Delete',
+        message: '전제 리스트를 삭제 합니다.',
+        cancel: true,
+        persistent: true,
+        html: true,
+      }).onOk(() => {
+        window.Fn.deleteAll()
+      })
+    }
+
     onBeforeMount(async () => {
       window.list.onResponse((args) => {
         rows.value = args.list
@@ -245,6 +264,7 @@ export default defineComponent({
       fnOn,
       fnOff,
       fnDelete,
+      fnDeleteAll,
       fnAllOn,
       fnAllOff,
     }
