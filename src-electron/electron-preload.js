@@ -19,34 +19,34 @@
 import { contextBridge } from 'electron'
 import { ipcRenderer } from 'electron'
 
-contextBridge.exposeInMainWorld('list', {
-  get: () => {
-    ipcRenderer.send('getList')
+contextBridge.exposeInMainWorld('FN', {
+  onRequest: (args) => {
+    ipcRenderer.send('onRequest', { ...args })
   },
   onResponse: (fn) => {
-    ipcRenderer.on('returnList', (event, ...args) => {
+    ipcRenderer.on('onResponse', (event, ...args) => {
       fn(...args)
     })
   },
 })
 
-contextBridge.exposeInMainWorld('Fn', {
-  on: (item) => {
-    ipcRenderer.send('poweron', item)
-  },
-  off: (item) => {
-    ipcRenderer.send('poweroff', item)
-  },
-  delete: (item) => {
-    ipcRenderer.send('delete', item)
-  },
-  allon: () => {
-    ipcRenderer.send('poweronall')
-  },
-  alloff: () => {
-    ipcRenderer.send('poweroffall')
-  },
-  deleteAll: () => {
-    ipcRenderer.send('deleteAll')
-  }
-})
+// contextBridge.exposeInMainWorld('Fn', {
+//   on: (item) => {
+//     ipcRenderer.send('poweron', item)
+//   },
+//   off: (item) => {
+//     ipcRenderer.send('poweroff', item)
+//   },
+//   delete: (item) => {
+//     ipcRenderer.send('delete', item)
+//   },
+//   allon: () => {
+//     ipcRenderer.send('poweronall')
+//   },
+//   alloff: () => {
+//     ipcRenderer.send('poweroffall')
+//   },
+//   deleteAll: () => {
+//     ipcRenderer.send('deleteAll')
+//   }
+// })

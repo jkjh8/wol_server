@@ -3,10 +3,13 @@ import { ipcMain } from 'electron'
 import path from 'path'
 import net from 'net'
 import dgram from 'dgram'
-import moment from 'moment'
 import wol from 'node-wol'
-
 import db from './db'
+import { getList, updateDevice, sendMulticast, sendWindow } from './func'
+
+const multicast_addr = '230.185.192.109'
+const client_port = 52319
+const server_port = 56434
 
 try {
   if (
@@ -27,7 +30,7 @@ function createWindow() {
    * Initial window options
    */
   mainWindow = new BrowserWindow({
-    width: 700,
+    width: 1400, //700
     height: 600,
     useContentSize: true,
     webPreferences: {
@@ -36,7 +39,6 @@ function createWindow() {
       preload: path.resolve(__dirname, process.env.QUASAR_ELECTRON_PRELOAD),
     },
   })
-
   mainWindow.loadURL(process.env.APP_URL)
 
   if (process.env.DEBUGGING) {
@@ -70,160 +72,98 @@ app.on('activate', () => {
 })
 
 const server = dgram.createSocket('udp4')
-const client = dgram.createSocket('udp4')
-const MCAST_ADDR = '230.185.192.109'
-const server_port = 12341
-const client_port = 12340
 
-server.bind(41418, function () {
+server.bind(server_port, () => {
   server.setBroadcast(true)
   server.setMulticastTTL(128)
-  server.addMembership(MCAST_ADDR)
+  server.addMembership(multicast_addr)
 })
 
-client.bind(client_port, '0.0.0.0')
-
-function sendCommand(command) {
-  try {
-    const message = JSON.stringify(command)
-    server.send(message, 0, message.length, server_port, MCAST_ADDR)
-  } catch (error) {
-    console.error(error)
-  }
-}
-
-client.on('listening', function () {
-  const address = client.address()
-  console.log('udp listening on: ' + address.address + ':' + address.port)
-  client.setBroadcast(true)
-  client.setMulticastTTL(128)
-  client.addMembership(MCAST_ADDR)
-})
-
-client.on('message', async function (message, remote) {
-  try {
-    const device = JSON.parse(message)
-    const r = await db.list.update(
-      {
-        mac: device.mac,
-      },
-      {
-        $set: {
-          name: device.name,
-          address: device.address,
-          mac: device.mac,
-          hostname: device.hostname,
-          block: device.block,
-          idle: false,
-        },
-      },
-      {
-        upsert: true,
-      }
+function sync() {
+  setInterval(async () => {
+    // ui list update
+    getList()
+    // send sync to clients
+    server.send(
+      JSON.stringify({ command: 'sync' }),
+      client_port,
+      multicast_addr
     )
-    console.log(r)
-  } catch (error) {
-    console.error(error)
-  }
-})
-
-function sendSync() {
-  interval = setInterval(function () {
-    sendCommand({ section: 'sync' })
   }, 5000)
 }
 
-sendSync()
+sync()
 
-// list
-ipcMain.on('getList', async (event) => {
-  const r = await getList()
-  mainWindow.webContents.send('returnList', r)
-})
-
-async function getList() {
+server.on('message', async function (message, remote) {
   try {
-    const list = await db.list.find()
-    const idleCount = await db.list.count({ idle: true })
-    const blockCount = await db.list.count({ block: true })
-    let statusCount = 0
-    const t2 = moment()
-    for (let i = 0; i < list.length; i++) {
-      list[i]['idx'] = i + 1
-      const t1 = moment(list[i].updatedAt)
-      const duration = moment.duration(t2.diff(t1)).asSeconds()
-      if (duration > 10) {
-        list[i]['status'] = false
-        statusCount = statusCount + 1
-      } else {
-        list[i]['status'] = true
-      }
-    }
-    return {
-      list,
-      listCount: list.length,
-      idleCount,
-      blockCount,
-      statusCount,
+    const args = JSON.parse(message)
+    switch (args.command) {
+      case 'device':
+        updateDevice(args.value)
+        break
     }
   } catch (error) {
     console.error(error)
   }
-}
+})
 
-// poweron
-ipcMain.on('poweron', async (event, args) => {
-  console.log(args)
-  wol.wake(args.mac, function (error) {
-    if (error) {
-      console.error(error)
+ipcMain.on('onRequest', async (e, args) => {
+  try {
+    let devices
+    switch (args.command) {
+      case 'delete':
+        await db.list.remove({ _id: args.value._id })
+        getList()
+        break
+      case 'deleteAll':
+        await db.list.remove({}, { multi: true })
+        getList()
+        break
+      case 'getlist':
+        getList()
+        break
+      case 'off':
+        sendMulticast(
+          {
+            command: 'off',
+            value: [args.value.mac],
+          },
+          server,
+          client_port,
+          multicast_addr
+        )
+        break
+      case 'on': {
+        wol.wake(args.value.mac, (err) => {
+          if (err) return console.error(err)
+          console.log('power on', args.value.mac)
+        })
+        break
+      }
+      case 'alloff':
+        devices = await db.list.find()
+        sendMulticast(
+          {
+            command: 'off',
+            value: devices.map((e) => e.mac),
+          },
+          server,
+          client_port,
+          multicast_addr
+        )
+        break
+      case 'allon':
+        devices = await db.list.find()
+        devices.forEach((device) => {
+          wol.wake(device.mac, (err) => {
+            if (err) return console.error(err)
+            console.log('power on', device.mac)
+          })
+        })
+        break
     }
-    return console.log('power on : ', args.mac)
-  })
-  await db.list.update({ mac: args.mac }, { $set: { idle: true } })
-})
-
-ipcMain.on('poweroff', async (event, args) => {
-  sendCommand({ section: 'power', args: [args.mac] })
-})
-
-ipcMain.on('delete', async (event, args) => {
-  console.log(args)
-  await db.list.remove({ _id: args._id })
-  const r = await getList()
-  mainWindow.webContents.send('returnList', r)
-})
-
-ipcMain.on('deleteAll', async (event) => {
-  console.log('deleteAll')
-  await db.list.remove({}, { multi: true })
-  mainWindow.webContents.send('returnList', [])
-})
-
-ipcMain.on('poweronall', async (event) => {
-  try {
-    const devices = await db.list.find({}, { mac: 1, _id: 0 })
-    devices.forEach((device) => {
-      wol.wake(device.mac, function (err) {
-        if (err) return console.error(err)
-        return console.log('Power On: ', device.mac)
-      })
-    })
-    const r = await db.list.update({}, { $set: { idel: true } })
-    console.log(r)
-  } catch (err) {
-    console.error(err)
-  }
-})
-
-ipcMain.on('poweroffall', async (event) => {
-  try {
-    const devices = await db.list.find({}, { mac: 1, _id: 0 })
-    const deviceMacArr = devices.map((e) => e.mac)
-    console.log(deviceMacArr)
-    sendCommand({ section: 'power', args: deviceMacArr })
-  } catch (err) {
-    console.error(err)
+  } catch (e) {
+    console.error(e)
   }
 })
 
