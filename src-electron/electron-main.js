@@ -1,12 +1,7 @@
 import { app, BrowserWindow, nativeTheme } from 'electron'
-import { ipcMain } from 'electron'
 import path from 'path'
-import net from 'net'
-import dgram from 'dgram'
-import wol from 'node-wol'
-import db from './db'
-import { getList, updateDevice, sendMulticast, sendWindow } from './functions'
-import { createMulticast } from './multicast'
+import { createMainMenu } from './menu'
+import { createMulticast, multicastSend } from './multicast'
 
 import './ipc'
 
@@ -22,6 +17,7 @@ try {
 } catch (_) {}
 
 let mainWindow
+let mainMenu
 let multicast
 
 async function createWindow() {
@@ -32,8 +28,8 @@ async function createWindow() {
     webPreferences: {
       contextIsolation: true,
       // More info: /quasar-cli/developing-electron-apps/electron-preload-script
-      preload: path.resolve(__dirname, process.env.QUASAR_ELECTRON_PRELOAD),
-    },
+      preload: path.resolve(__dirname, process.env.QUASAR_ELECTRON_PRELOAD)
+    }
   })
   mainWindow.loadURL(process.env.APP_URL)
 
@@ -53,6 +49,7 @@ async function createWindow() {
   // menu
   // mainWindow.setMenu(null)
   // open multicast port
+  mainMenu = createMainMenu()
   multicast = await createMulticast()
 }
 
@@ -69,3 +66,7 @@ app.on('activate', () => {
     createWindow()
   }
 })
+
+const mainLoop = setInterval(() => {
+  multicastSend({ command: 'sync' })
+}, 5000)
