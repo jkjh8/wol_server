@@ -1,6 +1,14 @@
 import db from './db'
 import moment from 'moment'
+import wol from 'node-wol'
 import { BrowserWindow } from 'electron'
+
+function powerOn(mac) {
+  wol.wake(mac, (err) => {
+    if (err) return console.error('power on error ', mac, err)
+    console.log('power on ', mac)
+  })
+}
 
 async function getList() {
   try {
@@ -61,21 +69,12 @@ async function updateDevice(device) {
   }
 }
 
-async function sendMulticast(args, server, port, addr) {
-  try {
-    return server.send(JSON.stringify(args), port, addr)
-  } catch (e) {
-    console.error(e)
-  }
-}
-
 async function sendWindow(args) {
   try {
-    const mainWindow = BrowserWindow.fromId(1)
-    mainWindow.webContents.send('onResponse', args)
+    BrowserWindow.fromId(1).webContents.send('onResponse', args)
   } catch (e) {
     console.error(e)
   }
 }
 
-export { getList, updateDevice, sendMulticast, sendWindow }
+export { getList, updateDevice, sendWindow, powerOn }

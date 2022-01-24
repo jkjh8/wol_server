@@ -5,11 +5,10 @@ import net from 'net'
 import dgram from 'dgram'
 import wol from 'node-wol'
 import db from './db'
-import { getList, updateDevice, sendMulticast, sendWindow } from './func'
+import { getList, updateDevice, sendMulticast, sendWindow } from './functions'
+import { createMulticast } from './multicast'
 
-const multicast_addr = '230.185.192.109'
-const client_port = 52319
-const server_port = 56434
+import './ipc'
 
 try {
   if (
@@ -23,9 +22,9 @@ try {
 } catch (_) {}
 
 let mainWindow
-let interval
+let multicast
 
-function createWindow() {
+async function createWindow() {
   /**
    * Initial window options
    */
@@ -54,7 +53,10 @@ function createWindow() {
   mainWindow.on('closed', () => {
     mainWindow = null
   })
-  mainWindow.setMenu(null)
+  // menu
+  // mainWindow.setMenu(null)
+  // open multicast port
+  multicast = await createMulticast()
 }
 
 app.on('ready', createWindow)
@@ -71,108 +73,48 @@ app.on('activate', () => {
   }
 })
 
-const server = dgram.createSocket('udp4')
+// const server = dgram.createSocket('udp4')
 
-server.bind(server_port, () => {
-  server.setBroadcast(true)
-  server.setMulticastTTL(128)
-  server.addMembership(multicast_addr)
-})
+// server.bind(server_port, () => {
+//   server.setBroadcast(true)
+//   server.setMulticastTTL(128)
+//   server.addMembership(multicast_addr)
+// })
 
-function sync() {
-  setInterval(async () => {
-    // ui list update
-    getList()
-    // send sync to clients
-    server.send(
-      JSON.stringify({ command: 'sync' }),
-      client_port,
-      multicast_addr
-    )
-  }, 5000)
-}
+// function sync() {
+//   setInterval(async () => {
+//     // ui list update
+//     getList()
+//     // send sync to clients
+//     server.send(
+//       JSON.stringify({ command: 'sync' }),
+//       client_port,
+//       multicast_addr
+//     )
+//   }, 5000)
+// }
 
-sync()
+// sync()
 
-server.on('message', async function (message, remote) {
-  try {
-    const args = JSON.parse(message)
-    switch (args.command) {
-      case 'device':
-        updateDevice(args.value)
-        break
-    }
-  } catch (error) {
-    console.error(error)
-  }
-})
+// server.on('message', async function (message, remote) {
+//   try {
+//     const args = JSON.parse(message)
+//     switch (args.command) {
+//       case 'device':
+//         updateDevice(args.value)
+//         break
+//     }
+//   } catch (error) {
+//     console.error(error)
+//   }
+// })
 
-ipcMain.on('onRequest', async (e, args) => {
-  try {
-    let devices
-    switch (args.command) {
-      case 'delete':
-        await db.list.remove({ _id: args.value._id })
-        getList()
-        break
-      case 'deleteAll':
-        await db.list.remove({}, { multi: true })
-        getList()
-        break
-      case 'getlist':
-        getList()
-        break
-      case 'off':
-        sendMulticast(
-          {
-            command: 'off',
-            value: [args.value.mac],
-          },
-          server,
-          client_port,
-          multicast_addr
-        )
-        break
-      case 'on': {
-        wol.wake(args.value.mac, (err) => {
-          if (err) return console.error(err)
-          console.log('power on', args.value.mac)
-        })
-        break
-      }
-      case 'alloff':
-        devices = await db.list.find()
-        sendMulticast(
-          {
-            command: 'off',
-            value: devices.map((e) => e.mac),
-          },
-          server,
-          client_port,
-          multicast_addr
-        )
-        break
-      case 'allon':
-        devices = await db.list.find()
-        devices.forEach((device) => {
-          wol.wake(device.mac, (err) => {
-            if (err) return console.error(err)
-            console.log('power on', device.mac)
-          })
-        })
-        break
-    }
-  } catch (e) {
-    console.error(e)
-  }
-})
-
-const tcpSocket = net
-  .createServer(function (socket) {
-    console.log('client connect: ', socket.remoteAddress)
-    socket.on('data', function (data) {
-      console.log(data)
-      socket.write(data)
-    })
-  })
-  .listen(9995, '0.0.0.0')
+// const tcpSocket = net
+//   .createServer(function (socket) {
+//     console.log('client connect: ', socket.remoteAddress)
+//     socket.on('data', function (data) {
+//       console.log(data)
+//       socket.write(data)
+//     })
+//   })
+//   .listen(9995, '0.0.0.0')
