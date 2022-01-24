@@ -1,7 +1,7 @@
 import { BrowserWindow } from 'electron'
 import dgram from 'dgram'
 import db from '../db'
-
+import { getList } from '../functions'
 let multicast
 const maddr = '230.185.192.109'
 const server_port = 52319
@@ -33,10 +33,20 @@ function createMulticast() {
   })
 }
 
-async function parser(args) {
+async function parser(message) {
   try {
-    const msg = JSON.parse(args)
-    console.log(msg)
+    const args = JSON.parse(message)
+
+    switch (args.command) {
+      case 'nic':
+        await db.list.update(
+          { mac: args.value.mac },
+          { $set: { ...args.value } },
+          { upsert: true }
+        )
+        await getList()
+        break
+    }
   } catch (e) {
     console.error('Multicast message parser error ', e)
   }
@@ -44,7 +54,7 @@ async function parser(args) {
 
 function multicastSend(msg) {
   try {
-    multicast.send(JSON.parse(msg), client_port, maddr)
+    multicast.send(JSON.stringify(msg), client_port, maddr)
   } catch (e) {
     console.error('Multicast send error ', e)
   }

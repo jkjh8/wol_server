@@ -7,9 +7,10 @@ import { multicastSend } from '../multicast'
 ipcMain.on('onRequest', async (e, args) => {
   try {
     let devices
+    console.log(args)
     switch (args.command) {
       case 'delete':
-        await db.list.remove({ _id: args.value._id })
+        await db.list.remove({ mac: args.value })
         getList()
         break
       case 'deleteAll':
@@ -41,6 +42,9 @@ ipcMain.on('onRequest', async (e, args) => {
         devices.forEach((device) => {
           powerOn(device.mac)
         })
+        break
+      case 'resync':
+        multicastSend({ command: 'sync' })
         break
     }
   } catch (e) {

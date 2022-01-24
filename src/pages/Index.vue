@@ -41,7 +41,7 @@
               </div>
             </div>
             <div>
-              <q-btn round unelevated @click="fnDeleteAll">
+              <q-btn round unelevated @click="fnReSync">
                 <q-icon
                   name="svguse:icons.svg#refresh"
                   color="green-10"
@@ -114,6 +114,10 @@ export default defineComponent({
       })
     }
 
+    function fnReSync() {
+      window.FN.onRequest({ command: 'resync' })
+    }
+
     onBeforeMount(async () => {
       //
     })
@@ -125,6 +129,7 @@ export default defineComponent({
       fnDeleteAll,
       fnAllOn,
       fnAllOff,
+      fnReSync,
     }
   },
 })

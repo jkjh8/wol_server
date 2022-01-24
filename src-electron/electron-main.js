@@ -25,9 +25,6 @@ let mainWindow
 let multicast
 
 async function createWindow() {
-  /**
-   * Initial window options
-   */
   mainWindow = new BrowserWindow({
     width: 1400, //700
     height: 600,
@@ -72,49 +69,3 @@ app.on('activate', () => {
     createWindow()
   }
 })
-
-// const server = dgram.createSocket('udp4')
-
-// server.bind(server_port, () => {
-//   server.setBroadcast(true)
-//   server.setMulticastTTL(128)
-//   server.addMembership(multicast_addr)
-// })
-
-// function sync() {
-//   setInterval(async () => {
-//     // ui list update
-//     getList()
-//     // send sync to clients
-//     server.send(
-//       JSON.stringify({ command: 'sync' }),
-//       client_port,
-//       multicast_addr
-//     )
-//   }, 5000)
-// }
-
-// sync()
-
-// server.on('message', async function (message, remote) {
-//   try {
-//     const args = JSON.parse(message)
-//     switch (args.command) {
-//       case 'device':
-//         updateDevice(args.value)
-//         break
-//     }
-//   } catch (error) {
-//     console.error(error)
-//   }
-// })
-
-// const tcpSocket = net
-//   .createServer(function (socket) {
-//     console.log('client connect: ', socket.remoteAddress)
-//     socket.on('data', function (data) {
-//       console.log(data)
-//       socket.write(data)
-//     })
-//   })
-//   .listen(9995, '0.0.0.0')

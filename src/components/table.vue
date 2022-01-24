@@ -96,6 +96,7 @@ export default {
         message: `<strong>${item.mac}</strong>이 전원을 켭니다.`,
         cancel: true,
         persistent: true,
+        html: true,
       }).onOk(() => {
         window.FN.onRequest({
           command: 'on',
@@ -110,6 +111,7 @@ export default {
         message: `<strong>${item.mac}</strong>의 전원을 끕니다.`,
         cancel: true,
         persistent: true,
+        html: true,
       }).onOk(() => {
         window.FN.onRequest({
           command: 'off',
@@ -125,9 +127,9 @@ export default {
         cancel: true,
         persistent: true,
       }).onOk(() => {
-        window.Fn.onRequest({
+        window.FN.onRequest({
           command: 'delete',
-          value: item,
+          value: item.mac,
         })
       })
     }
