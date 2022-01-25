@@ -10,7 +10,7 @@
               size="1.5rem"
             />
           </q-avatar>
-          <div class="text-h6">WOL Client for AMX</div>
+          <div class="text-h6">WOL Server for AMX</div>
         </div>
       </q-card-section>
 
@@ -20,21 +20,14 @@
           <div>날짜: 2022-01-23</div>
           <div>License: MIT License</div>
           <div>만든이: jkjh82@naver.com</div>
-          <div>
-            Electron: {{ packageInfo.devDependencies.electron }}
-          </div>
+          <div>Electron: {{ packageInfo.devDependencies.electron }}</div>
           <div>Quasar: {{ packageInfo.dependencies.quasar }}</div>
         </div>
       </q-card-section>
 
       <q-card-actions align="right">
         <div>
-          <q-btn
-            color="primary"
-            flat
-            label="확인"
-            @click="onOKClick()"
-          />
+          <q-btn color="primary" flat label="확인" @click="onOKClick()" />
         </div>
       </q-card-actions>
     </q-card>

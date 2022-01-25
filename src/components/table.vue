@@ -8,27 +8,27 @@
         align: 'center',
         label: 'No.',
         field: 'idx',
-        sortable: true,
+        sortable: true
       },
       {
         name: 'name',
         align: 'center',
         label: 'HostName',
         field: 'hostname',
-        sortable: true,
+        sortable: true
       },
       {
         name: 'address',
         align: 'center',
         label: 'IP Addr',
         field: 'address',
-        sortable: true,
+        sortable: true
       },
       {
         name: 'actions',
         align: 'center',
-        label: 'Actions',
-      },
+        label: 'Actions'
+      }
     ]"
     row-key="_id"
     :pagination="{ rowsPerPage: 20 }"
@@ -79,13 +79,13 @@
 </template>
 
 <script>
-import { computed, onBeforeMount } from 'vue'
+import { computed } from 'vue'
 import { useStore } from 'vuex'
 import { useQuasar } from 'quasar'
 
 export default {
   setup() {
-    const { state, dispatch } = useStore()
+    const { state } = useStore()
     const $q = useQuasar()
 
     const list = computed(() => state.devices.devices)
@@ -96,11 +96,11 @@ export default {
         message: `<strong>${item.mac}</strong>이 전원을 켭니다.`,
         cancel: true,
         persistent: true,
-        html: true,
+        html: true
       }).onOk(() => {
         window.FN.onRequest({
           command: 'on',
-          value: item,
+          value: item
         })
       })
     }
@@ -111,11 +111,11 @@ export default {
         message: `<strong>${item.mac}</strong>의 전원을 끕니다.`,
         cancel: true,
         persistent: true,
-        html: true,
+        html: true
       }).onOk(() => {
         window.FN.onRequest({
           command: 'off',
-          value: item,
+          value: item
         })
       })
     }
@@ -125,32 +125,21 @@ export default {
         title: 'Delete',
         message: `<strong>${item.mac}</strong>가 리스트에서 삭제 됩니다.`,
         cancel: true,
-        persistent: true,
+        persistent: true
       }).onOk(() => {
         window.FN.onRequest({
           command: 'delete',
-          value: item.mac,
+          value: item.mac
         })
       })
     }
-
-    onBeforeMount(async () => {
-      window.FN.onResponse((args) => {
-        switch (args.command) {
-          case 'list':
-            dispatch('devices/update', args.value)
-            break
-        }
-      })
-      window.FN.onRequest({ command: 'getlist' })
-    })
 
     return {
       list,
       fnOn,
       fnOff,
-      fnDelete,
+      fnDelete
     }
-  },
+  }
 }
 </script>

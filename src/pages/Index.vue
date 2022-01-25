@@ -40,12 +40,23 @@
                 </div>
               </div>
             </div>
-            <div>
-              <q-btn round unelevated @click="fnReSync">
-                <q-icon
-                  name="svguse:icons.svg#refresh"
-                  color="green-10"
-                ></q-icon>
+            <div class="q-gutter-x-sm">
+              <q-btn
+                flat
+                round
+                color="red-10"
+                icon="svguse:icons.svg#trash"
+                @click="fnDeleteAll"
+              >
+                <q-tooltip>전체삭제</q-tooltip>
+              </q-btn>
+              <q-btn
+                round
+                unelevated
+                icon="svguse:icons.svg#refresh"
+                @click="fnReSync"
+              >
+                <q-tooltip>새로고침</q-tooltip>
               </q-btn>
             </div>
           </div>
@@ -63,15 +74,15 @@ import { defineComponent, ref, onBeforeMount, computed } from 'vue'
 import { useStore } from 'vuex'
 import { useQuasar } from 'quasar'
 import ClientsTable from '../components/table.vue'
+import InfoDialog from '../components/infoDialog.vue'
 
 export default defineComponent({
   name: 'PageIndex',
   components: { ClientsTable },
   setup() {
-    const { state } = useStore()
+    const { state, dispatch } = useStore()
     const $q = useQuasar()
 
-    const interval = ref(null)
     const list = computed(() => state.devices.devices)
     const listCount = computed(() => {
       return list.value.length
@@ -85,7 +96,7 @@ export default defineComponent({
         title: 'Power On All',
         message: '등록된 모든 PC의 전원을 켭니다.',
         cancel: true,
-        persistent: true,
+        persistent: true
       }).onOk(() => {
         window.FN.onRequest({ command: 'allon' })
       })
@@ -96,7 +107,7 @@ export default defineComponent({
         title: 'Power OFF All',
         message: '등록된 모든 PC의 전원을 끕니다.',
         cancel: true,
-        persistent: true,
+        persistent: true
       }).onOk(() => {
         window.FN.onRequest({ command: 'alloff' })
       })
@@ -108,7 +119,7 @@ export default defineComponent({
         message: '전제 리스트를 삭제 합니다.',
         cancel: true,
         persistent: true,
-        html: true,
+        html: true
       }).onOk(() => {
         window.FN.onRequest({ command: 'deleteAll' })
       })
@@ -119,7 +130,19 @@ export default defineComponent({
     }
 
     onBeforeMount(async () => {
-      //
+      window.FN.onResponse((args) => {
+        switch (args.command) {
+          case 'list':
+            dispatch('devices/update', args.value)
+            break
+          case 'info':
+            $q.dialog({
+              component: InfoDialog
+            })
+            break
+        }
+      })
+      window.FN.onRequest({ command: 'getlist' })
     })
     return {
       listCount,
@@ -129,9 +152,9 @@ export default defineComponent({
       fnDeleteAll,
       fnAllOn,
       fnAllOff,
-      fnReSync,
+      fnReSync
     }
-  },
+  }
 })
 </script>
 

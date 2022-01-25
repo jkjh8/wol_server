@@ -1,4 +1,5 @@
 import { app, Menu, nativeImage, BrowserWindow } from 'electron'
+import { multicastSend } from '../multicast'
 
 const img_close = nativeImage.createFromPath('src-electron/icons/close.png')
 const img_reload = nativeImage.createFromPath('src-electron/icons/reset.png')
@@ -36,7 +37,7 @@ const createMainMenu = (syncVal) => {
           id: 'autoSync',
           accelerator: 'CommandOrControl+S',
           click: () => {
-            //
+            setAutoSync()
           }
         },
         { type: 'separator' },
@@ -46,7 +47,7 @@ const createMainMenu = (syncVal) => {
           accelerator: 'CommandOrControl+R',
           icon: img_reload.resize({ width: 16, height: 16 }),
           click: () => {
-            //
+            multicastSend({ command: 'sync' })
           }
         }
       ]
@@ -71,6 +72,20 @@ const createMainMenu = (syncVal) => {
 
   Menu.setApplicationMenu(mainMenu)
   return mainMenu
+}
+
+async function setAutoSync() {
+  try {
+    autoSync = !autoSync
+    mainMenu.getMenuItemById('autoSync').checked = autoSync
+    await db.setup.update(
+      { section: 'autosync' },
+      { $set: { value: autoSync } },
+      { upsert: true }
+    )
+  } catch (e) {
+    console.error(e)
+  }
 }
 
 export { createMainMenu }
