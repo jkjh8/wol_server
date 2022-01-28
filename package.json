@@ -1,6 +1,6 @@
 {
   "name": "wol_server",
-  "version": "0.0.1",
+  "version": "0.1.1",
   "description": "Wol Server For AMX app",
   "productName": "Wol Server For AMX",
   "author": "jkjh8 <jkjh82@naver.com>",
@@ -22,6 +22,8 @@
     "@babel/eslint-parser": "^7.13.14",
     "@quasar/app": "^3.0.0",
     "electron": "^15.1.2",
+    "electron-builder": "^22.4.0",
+    "electron-packager": "^15.2.0",
     "eslint": "^7.14.0",
     "eslint-config-prettier": "^8.1.0",
     "eslint-plugin-vue": "^7.0.0",
