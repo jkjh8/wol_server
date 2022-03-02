@@ -1,5 +1,23 @@
 import { app, BrowserWindow, nativeTheme } from 'electron'
 import path from 'path'
+
+// 중복실행 방지
+app.requestSingleInstanceLock({
+  key: '2qw2e3r4aldkeos0sl123ao123ads23'
+})
+app.on('second-instance', (e, argv, cwd) => {
+  console.log(e, argv, cwd)
+  dialog
+    .showMessageBox({
+      message: '중복 실행 오류',
+      buttons: ['ok']
+    })
+    .then((r) => {
+      console.log(r)
+    })
+  app.exit(0)
+})
+
 import { createMainMenu } from './menu'
 import { createMulticast, multicastSend } from './multicast'
 
