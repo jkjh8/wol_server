@@ -25,6 +25,7 @@ async function getList() {
       list[i]['idx'] = i + 1
       const t1 = moment(list[i].updatedAt)
       const duration = moment.duration(t2.diff(t1)).asSeconds()
+      console.log(duration)
       if (duration > 10) {
         list[i]['status'] = false
         statusCount = statusCount + 1
@@ -39,8 +40,8 @@ async function getList() {
         list,
         idleCount,
         blockCount,
-        statusCount,
-      },
+        statusCount
+      }
     })
   } catch (e) {
     console.error(e)
@@ -58,8 +59,8 @@ async function updateDevice(device) {
           mac: device.mac,
           hostname: device.hostname,
           block: device.block,
-          idle: false,
-        },
+          idle: false
+        }
       },
       { upsert: true }
     )

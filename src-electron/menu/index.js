@@ -1,9 +1,11 @@
 import { app, Menu, nativeImage, BrowserWindow } from 'electron'
+import path from 'path'
 import { multicastSend } from '../multicast'
 
-const img_close = nativeImage.createFromPath('src-electron/icons/close.png')
-const img_reload = nativeImage.createFromPath('src-electron/icons/reset.png')
-const img_info = nativeImage.createFromPath('src-electron/icons/info.png')
+const img_path = process.env.DEV ? 'public' : process.resourcesPath
+const img_close = nativeImage.createFromPath(path.join(img_path, 'close.png'))
+const img_reload = nativeImage.createFromPath(path.join(img_path, 'reset.png'))
+const img_info = nativeImage.createFromPath(path.join(img_path, 'info.png'))
 
 let mainMenu
 let autoSync = false
@@ -30,17 +32,17 @@ const createMainMenu = (syncVal) => {
     {
       label: 'Edit',
       submenu: [
-        {
-          label: 'Auto Sync',
-          type: 'checkbox',
-          checked: autoSync,
-          id: 'autoSync',
-          accelerator: 'CommandOrControl+S',
-          click: () => {
-            setAutoSync()
-          }
-        },
-        { type: 'separator' },
+        // {
+        //   label: 'Auto Sync',
+        //   type: 'checkbox',
+        //   checked: autoSync,
+        //   id: 'autoSync',
+        //   accelerator: 'CommandOrControl+S',
+        //   click: () => {
+        //     setAutoSync()
+        //   }
+        // },
+        // { type: 'separator' },
         {
           label: 'Reload',
           type: 'normal',

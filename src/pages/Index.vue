@@ -35,8 +35,7 @@
               <div>
                 <div class="listname">Client List</div>
                 <div class="caption">
-                  현제 등록된 PC {{ listCount }}대 기동중 {{ idleCount }}대
-                  동작중 {{ statusCount }}대 입니다.
+                  현제 등록된 PC {{ listCount }}대 입니다.
                 </div>
               </div>
             </div>

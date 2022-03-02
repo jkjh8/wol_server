@@ -23,18 +23,18 @@ ipcMain.on('onRequest', async (e, args) => {
       case 'off':
         multicastSend({
           command: 'off',
-          value: [args.value.mac],
+          value: [args.value]
         })
         break
       case 'on': {
-        powerOn(args.value.mac)
+        powerOn(args.value)
         break
       }
       case 'alloff':
         devices = await db.list.find()
         multicastSend({
           command: 'off',
-          value: devices.map((e) => e.mac),
+          value: devices.map((e) => e.mac)
         })
         break
       case 'allon':

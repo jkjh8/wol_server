@@ -1,4 +1,3 @@
-import { BrowserWindow } from 'electron'
 import dgram from 'dgram'
 import db from '../db'
 import { getList } from '../functions'
@@ -36,6 +35,7 @@ function createMulticast() {
 async function parser(message) {
   try {
     const args = JSON.parse(message)
+    console.log('from Multicast ', args)
 
     switch (args.command) {
       case 'nic':
@@ -44,7 +44,7 @@ async function parser(message) {
           { $set: { ...args.value } },
           { upsert: true }
         )
-        await getList()
+        // await getList()
         break
     }
   } catch (e) {

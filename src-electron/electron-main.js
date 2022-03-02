@@ -22,6 +22,7 @@ import { createMainMenu } from './menu'
 import { createMulticast, multicastSend } from './multicast'
 
 import './ipc'
+import { getList } from './functions'
 
 try {
   if (
@@ -40,7 +41,7 @@ let multicast
 
 async function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 1400, //700
+    width: 700, //700
     height: 600,
     useContentSize: true,
     webPreferences: {
@@ -87,4 +88,5 @@ app.on('activate', () => {
 
 const mainLoop = setInterval(() => {
   multicastSend({ command: 'sync' })
+  getList()
 }, 5000)

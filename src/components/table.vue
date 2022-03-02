@@ -100,7 +100,7 @@ export default {
       }).onOk(() => {
         window.FN.onRequest({
           command: 'on',
-          value: item
+          value: item.mac
         })
       })
     }
@@ -115,7 +115,7 @@ export default {
       }).onOk(() => {
         window.FN.onRequest({
           command: 'off',
-          value: item
+          value: item.mac
         })
       })
     }
